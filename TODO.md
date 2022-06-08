@@ -1,2 +1,8 @@
 - ~~write extension and load it into sqlite3~~
 - write extension and load it into sqlite3 in zig
+- fix `duration(time)` in zig
+- per project durations `duration(time, project)` in zig/c
+- `timeline(time, project)`???
+- `bucket(time, project)`???
+- need a windowing function, I think
+- what about ordering, is it correct? time_next > time_prev?
