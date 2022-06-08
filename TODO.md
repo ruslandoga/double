@@ -1,0 +1,2 @@
+- ~~write extension and load it into sqlite3~~
+- write extension and load it into sqlite3 in zig
