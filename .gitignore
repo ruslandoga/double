@@ -1,2 +1,6 @@
 dist/
 sqlite-amalgamation-*/
+*.dylib
+zig-cache/
+zig-out/
+.vscode

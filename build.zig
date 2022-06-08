@@ -6,8 +6,8 @@ pub fn build(b: *std.build.Builder) void {
     const mode = b.standardReleaseOptions();
 
     const lib = b.addStaticLibrary("double", "src/main.zig");
-    lib.force_pic; // TODO
-    lib.addIncludeDir("include/");
+    lib.force_pic = true;
+    lib.addIncludeDir("src/");
     lib.setBuildMode(mode);
     lib.install();
     // gcc -fPIC -dynamiclib -I src src/scalar.c -o dist/scalar.dylib
