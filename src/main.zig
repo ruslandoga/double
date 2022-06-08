@@ -73,17 +73,17 @@ pub const DurationAggState = extern struct {
 
 pub fn durationStep(ctx: ?*c.sqlite3_context, argc: c_int, argv: [*c]?*c.sqlite3_value) callconv(.C) void {
     _ = argc;
-    var durationAggState: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@alignOf(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @sizeOf(DurationAggState))));
+    var state: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@import("std").meta.alignment(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @bitCast(c_int, @truncate(c_uint, @sizeOf(DurationAggState))))));
     // TODO if (total == null) return sqlite3_api.result_error_nomem.?(ctx);
     const time = sqlite3_api.value_double.?(argv[0]);
-    const diff = time - durationAggState.*.prev;
-    if (diff < 300) durationAggState.*.sum += diff;
-    durationAggState.*.prev = time;
+    const diff = time - state.*.prev;
+    if (diff < 300) state.*.sum += diff;
+    state.*.prev = time;
 }
 
 pub fn durationFinal(ctx: ?*c.sqlite3_context) callconv(.C) void {
-    var durationAggState: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@alignOf(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @sizeOf(DurationAggState))));
-    sqlite3_api.result_double.?(ctx, durationAggState.*.sum);
+    var state: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@import("std").meta.alignment(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @bitCast(c_int, @truncate(c_uint, @sizeOf(DurationAggState))))));
+    sqlite3_api.result_double.?(ctx, state.*.sum);
 }
 
 pub export fn sqlite3_scalar_init(db: ?*c.sqlite3, pzErrMsg: [*c][*c]u8, pApi: [*c]c.sqlite3_api_routines) c_int {

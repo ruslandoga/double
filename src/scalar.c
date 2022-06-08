@@ -67,6 +67,31 @@ static void avg_final(sqlite3_context *ctx)
     sqlite3_result_null(ctx);
 }
 
+typedef struct duration_state
+{
+  double total;
+  double prev;
+} duration_state;
+
+static void duration_step(sqlite3_context *ctx, int argc, sqlite3_value **argv)
+{
+  duration_state *state = (duration_state *)sqlite3_aggregate_context(ctx, sizeof(duration_state));
+  if (state == NULL)
+    return sqlite3_result_error_nomem(ctx);
+
+  double time = sqlite3_value_double(argv[0]);
+  double diff = time - state->prev;
+  if (diff < 300)
+    state->total += diff;
+  state->prev = time;
+}
+
+static void duration_final(sqlite3_context *ctx)
+{
+  duration_state *state = (duration_state *)sqlite3_aggregate_context(ctx, sizeof(duration_state));
+  sqlite3_result_double(ctx, state->total);
+}
+
 // void odd(sqlite3_context *ctx, int argc, sqlite3_value **argv)
 // {
 //   int *pCounter = (int *)sqlite3_get_auxdata(ctx, 0);
@@ -102,6 +127,7 @@ __declspec(dllexport)
   // sqlite3_create_function(db, "odd", -1, SQLITE_UTF8, 0, odd, 0, 0);
   sqlite3_create_function(db, "aggsum", 1, SQLITE_UTF8, NULL, NULL, sum_step, sum_final);
   sqlite3_create_function(db, "aggavg", 1, SQLITE_UTF8, NULL, NULL, avg_step, avg_final);
+  sqlite3_create_function(db, "duration", 1, SQLITE_UTF8, NULL, NULL, duration_step, duration_final);
 
   return SQLITE_OK;
 }
