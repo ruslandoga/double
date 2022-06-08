@@ -10,6 +10,7 @@ pub fn build(b: *std.build.Builder) void {
     lib.addIncludeDir("include/");
     lib.setBuildMode(mode);
     lib.install();
+    // gcc -fPIC -dynamiclib -I src src/scalar.c -o dist/scalar.dylib
 
     const main_tests = b.addTest("src/main.zig");
     main_tests.setBuildMode(mode);
