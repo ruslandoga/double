@@ -66,6 +66,26 @@ pub fn sunFinal(ctx: ?*c.sqlite3_context) callconv(.C) void {
     sqlite3_api.result_double.?(ctx, total.*);
 }
 
+pub const DurationAggState = extern struct {
+    sum: f64,
+    prev: f64,
+};
+
+pub fn durationStep(ctx: ?*c.sqlite3_context, argc: c_int, argv: [*c]?*c.sqlite3_value) callconv(.C) void {
+    _ = argc;
+    var durationAggState: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@alignOf(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @sizeOf(DurationAggState))));
+    // TODO if (total == null) return sqlite3_api.result_error_nomem.?(ctx);
+    const time = sqlite3_api.value_double.?(argv[0]);
+    const diff = time - durationAggState.*.prev;
+    if (diff < 300) durationAggState.*.sum += diff;
+    durationAggState.*.prev = time;
+}
+
+pub fn durationFinal(ctx: ?*c.sqlite3_context) callconv(.C) void {
+    var durationAggState: [*c]DurationAggState = @ptrCast([*c]DurationAggState, @alignCast(@alignOf(DurationAggState), sqlite3_api.aggregate_context.?(ctx, @sizeOf(DurationAggState))));
+    sqlite3_api.result_double.?(ctx, durationAggState.*.sum);
+}
+
 pub export fn sqlite3_scalar_init(db: ?*c.sqlite3, pzErrMsg: [*c][*c]u8, pApi: [*c]c.sqlite3_api_routines) c_int {
     _ = pzErrMsg;
 
@@ -77,6 +97,8 @@ pub export fn sqlite3_scalar_init(db: ?*c.sqlite3, pzErrMsg: [*c][*c]u8, pApi: [
 
     // sqlite3_create_function(db, "aggsum", 1, SQLITE_UTF8, NULL, NULL, sum_step, sum_final);
     _ = sqlite3_api.create_function.?(db, "aggsum", 1, c.SQLITE_UTF8, null, null, sunStep, sunFinal);
+
+    _ = sqlite3_api.create_function.?(db, "duration", 1, c.SQLITE_UTF8, null, null, durationStep, durationFinal);
 
     // sqlite3_create_function(db, "aggavg", 1, SQLITE_UTF8, NULL, NULL, avg_step, avg_final);
     // _ = sqlite3_api.*.create_function.?(db, "aggavg", @as(c_int, 1), @as(c_int, 1), @intToPtr(?*anyopaque, @as(c_int, 0)), null, avg_step, avg_final);

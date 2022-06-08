@@ -4,3 +4,4 @@ sqlite-amalgamation-*/
 zig-cache/
 zig-out/
 .vscode
+*.db*
