@@ -10,7 +10,6 @@ pub fn build(b: *std.build.Builder) void {
     lib.addIncludeDir("src/");
     lib.setBuildMode(mode);
     lib.install();
-    // gcc -fPIC -dynamiclib -I src src/scalar.c -o dist/scalar.dylib
 
     const main_tests = b.addTest("src/main.zig");
     main_tests.setBuildMode(mode);
@@ -18,3 +17,6 @@ pub fn build(b: *std.build.Builder) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&main_tests.step);
 }
+
+// gcc -fPIC -dynamiclib -I src src/scalar.c -o dist/scalar.dylib
+// zig build-lib -fPIC -Isrc -dynamic src/main.zig -O ReleaseFast
